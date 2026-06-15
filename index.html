@@ -1,0 +1,43 @@
+<!DOCTYPE html><html><head><meta charset='utf-8'>
+<title>SMDB Digital Twin MVP</title>
+<link rel='stylesheet' href='https://unpkg.com/leaflet/dist/leaflet.css'>
+<script src='https://unpkg.com/leaflet/dist/leaflet.js'></script>
+<script src='https://unpkg.com/vis-network/standalone/umd/vis-network.min.js'></script>
+<style>
+body{margin:0;background:#09111d;color:white;font-family:Arial}
+#top{display:flex;height:100vh}
+#map{width:50%} #right{width:50%;padding:10px;background:#07101c}
+#network{height:40%} #details{height:55%;overflow:auto;border:1px solid #233}
+button{margin:4px}
+</style></head><body>
+<div id='top'><div id='map'></div><div id='right'>
+<h2>SMDB Tower Digital Twin MVP</h2>
+<button onclick='showNetwork()'>Network View</button>
+<div id='network'></div><div id='details'>Select a tower</div>
+</div></div>
+<script>
+let map=L.map('map').setView([30.5,72.9],7);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+fetch('sites.json').then(r=>r.json()).then(sites=>{
+ let nodes=[],edges=[];
+ sites.forEach((s,i)=>{
+  let m=L.marker([s.lat,s.lng]).addTo(map);
+  m.on('click',()=>showTwin(s));
+  nodes.push({id:i,label:s.siteCode});
+  if(i>0) edges.push({from:i-1,to:i});
+ });
+ new vis.Network(document.getElementById('network'),{nodes,edges},{});
+});
+function showTwin(s){
+document.getElementById('details').innerHTML=`
+<h3>${s.siteName}</h3>
+<p><b>Code:</b> ${s.siteCode}</p>
+<p><b>Vendor:</b> ${s.vendor}</p>
+<p><b>Tower:</b> ${s.towerType}</p>
+<p><b>Height:</b> ${s.height} m</p>
+<p><b>Tenants:</b> ${s.tenants}</p>
+<p><b>Rectifier:</b> ${s.rectifier}</p>
+<p><b>Grid:</b> ${s.grid}</p>
+<div>📡 Antennas<br>⚡ Rectifier<br>🔋 Battery Bank<br>🗼 Tower Structure</div>`;
+}
+</script></body></html>
